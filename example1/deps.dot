@@ -1,0 +1,19 @@
+digraph g {
+	graph [
+		rankdir = BT,
+	];
+	node [
+		shape = box,
+		style = filled,
+		fillcolor = "#f0f0f0",
+		fontcolor = black,
+	];
+
+	libm [label = "libm.a"; rank = source];
+	import [label = "import_example.go"];
+	main [label = "main.go"];
+
+	import -> libm [ label = sqrt ];
+	main -> import [ label = printSqrt ];
+}
+

@@ -1,0 +1,108 @@
+digraph g {
+	graph [
+		rankdir = TB,
+		ranksep = 1;
+	];
+	node [
+		shape = ellipse,
+		style = filled,
+		fillcolor = "#f0f0f0",
+		fontcolor = black,
+	];
+
+	subgraph cluster_clib {
+		label = "C libraries";
+		rank = min;
+		libm [label = "libm.a"];
+	}
+	subgraph cluster_golib {
+		label = "Go libraries";
+		rank = min;
+		fmt [label = "fmt.a"];
+	}
+
+	subgraph cluster_sources {
+		label = "Sources"
+		rank = 1;
+		fillcolor = lightgrey;
+		import [label = "import_example.go"];
+		main [label = "main.go"];
+	}
+
+	subgraph cluster_generated {
+		rank = 2;
+		flags [label = "_cgo_flags"];
+
+		cgo1 [label = "_import_example.cgo1.go"];
+		cgo2 [label = "_import_example.cgo2.c"];
+		export_c [label = "_cgo_export.c"];
+		export_h [label = "_cgo_export.h"];
+
+		gotypes [label = "_cgo_gotypes.go"];
+		dummy [label = "_cgo_main.c"];
+
+		label = "Generated files";
+		color = "black";
+		fillcolor = lightgrey;
+	}
+	import -> cgo1;
+	import -> cgo2;
+	import -> export_c;
+	import -> export_h;
+	import -> gotypes;
+	import -> dummy;
+	import -> flags;
+
+	subgraph cluster_objects {
+		cgo2_o [label = "_import_example.cgo2.o"];
+		export_o [label = "_cgo_export.o"];
+		dummy_o [label = "_cgo_main.o"];
+
+		label = "C objects";
+		rank = 3;
+	}
+
+	dummy -> dummy_o;
+	cgo2 -> cgo2_o;
+	export_c -> export_o;
+	export_h -> export_o;
+
+	cgo_o [label = "_cgo_.o"];
+	libm -> cgo_o;
+	dummy_o -> cgo_o;
+	cgo2_o -> cgo_o;
+	export_o -> cgo_o;
+
+	cgo_import [label = "_cgo_import.go"];
+	cgo_o -> cgo_import;
+
+	all_o [label = "_all.o"];
+	cgo2_o -> all_o;
+	export_o -> all_o;
+
+	subgraph cluster_go_archive {
+		pkgdef [label = "__.PKGDEF"];
+		go_o [label = "_go.o"];
+		all_o_a [label = "_all.o"];
+		rank = 4;
+		label = "example1.a";
+	}
+	gotypes -> go_o;
+	cgo1 -> go_o;
+	main -> go_o;
+	all_o -> all_o_a;
+
+	gotypes -> pkgdef;
+	cgo1 -> pkgdef;
+	main -> pkgdef;
+	cgo_import -> pkgdef;
+
+	example1 [label = "example1"];
+	{rank=max; example1}
+	pkgdef -> example1;
+	go_o -> example1;
+	all_o_a -> example1;
+	libm -> example1;
+	fmt -> example1;
+}
+
