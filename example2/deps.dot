@@ -1,0 +1,19 @@
+digraph g {
+	graph [
+		rankdir = BT,
+	];
+	node [
+		shape = box,
+		style = filled,
+		fillcolor = "#f0f0f0",
+		fontcolor = black,
+	];
+
+	export [label = "export_example.go"];
+	use [label = "use_exported.c"];
+	main [label = "main.go"];
+
+	use -> export [ label = goVersion ];
+	main -> use [ label = print_go_version ];
+}
+

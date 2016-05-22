@@ -1,0 +1,130 @@
+digraph g {
+	graph [
+		rankdir = TB,
+		ranksep = 1;
+	];
+	node [
+		shape = ellipse,
+		style = filled,
+		fillcolor = "#f0f0f0",
+		fontcolor = black,
+	];
+
+	subgraph cluster_clib {
+		label = "C libraries";
+		rank = min;
+		libc [label = "libc.so"];
+	}
+	subgraph cluster_golib {
+		label = "Go libraries";
+		rank = min;
+		runtime [label = "runtime.a"];
+	}
+
+	subgraph cluster_sources {
+		label = "Sources"
+		rank = 1;
+		fillcolor = lightgrey;
+		export [label = "export_example.go"];
+		use_h [label = "use_exported.h"];
+		use_c [label = "use_exported.c"];
+		main [label = "main.go"];
+	}
+
+	subgraph cluster_generated {
+		rank = 2;
+		flags [label = "_cgo_flags"];
+
+		cgo1 [label = "export_example.cgo1.go"];
+		cgo2 [label = "export_example.cgo2.c"];
+		cgo1m [label = "main.cgo1.go"];
+		cgo2m [label = "main.cgo2.c"];
+		export_c [label = "_cgo_export.c"];
+		export_h [label = "_cgo_export.h"];
+
+		gotypes [label = "_cgo_gotypes.go"];
+		dummy [label = "_cgo_main.c"];
+
+		label = "Generated files";
+		color = "black";
+		fillcolor = lightgrey;
+	}
+	export -> cgo1;
+	export -> cgo2;
+	export -> export_c;
+	export -> export_h;
+	export -> gotypes;
+	export -> dummy;
+	export -> flags;
+
+	main -> cgo1m;
+	main -> cgo2m;
+	main -> export_c;
+	main -> export_h;
+	main -> gotypes;
+	main -> dummy;
+	main -> flags;
+
+	subgraph cluster_objects {
+		cgo2_o [label = "export_example.cgo2.o"];
+		use_o  [label = "use_exported.o"];
+		main_o [label = "main.cgo2.o"];
+		export_o [label = "_cgo_export.o"];
+		dummy_o [label = "_cgo_main.o"];
+
+		label = "C objects";
+		rank = 3;
+	}
+
+	dummy -> dummy_o;
+	cgo2 -> cgo2_o;
+	cgo2m -> main_o;
+	export_c -> export_o;
+	export_h -> export_o;
+	use_c -> use_o;
+	use_h -> use_o;
+	export_h -> use_o
+
+	cgo_o [label = "_cgo_.o"];
+	libc -> cgo_o;
+	dummy_o -> cgo_o;
+	cgo2_o -> cgo_o;
+	use_o -> cgo_o;
+	main_o -> cgo_o;
+	export_o -> cgo_o;
+
+	cgo_import [label = "_cgo_import.go"];
+	cgo_o -> cgo_import;
+
+	all_o [label = "_all.o"];
+	cgo2_o -> all_o;
+	use_o -> all_o;
+	main_o -> all_o;
+	export_o -> all_o;
+
+	subgraph cluster_go_archive {
+		pkgdef [label = "__.PKGDEF"];
+		go_o [label = "_go_.o"];
+		all_o_a [label = "_all.o"];
+		rank = 4;
+		label = "example2.a";
+	}
+	gotypes -> go_o;
+	cgo1 -> go_o;
+	cgo1m -> go_o;
+	all_o -> all_o_a;
+
+	gotypes -> pkgdef;
+	cgo1 -> pkgdef;
+	cgo1m -> pkgdef;
+	cgo_import -> pkgdef;
+
+	example2 [label = "example2"];
+	{rank=max; example2}
+	pkgdef -> example2;
+	go_o -> example2;
+	all_o_a -> example2;
+	libc -> example2;
+	runtime -> example2;
+}
+
